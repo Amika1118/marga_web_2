@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MARGA Research Hub - Sri Lanka Research Hub</title>
+<meta name="description" content="Browse, search, and request research papers from Marga Institute and its partner organizations." />
+<link rel="icon" type="image/jpeg" href="site_logo/marga-logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="top"></div>
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<header class="site-header">
+  <div class="header-inner">
+    <a class="logo" href="#top" data-nav="home">
+      <span class="logo-mark"></span>
+      <span class="logo-text"><span>MARGA</span><small>Research Hub</small></span>
+    </a>
+
+    <div class="search-wrap">
+      <button class="search-toggle" id="searchToggle" aria-expanded="false" aria-controls="searchPanel">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>Search papers, authors, topics…</span>
+      </button>
+    </div>
+
+    <nav class="main-nav" id="mainNav">
+      <a href="#top" data-nav="home" class="active">Home</a>
+      <a href="#papers" data-nav="papers">Papers</a>
+      <button type="button" data-nav="contact">Contact Us</button>
+      <button type="button" data-nav="saved">Saved Papers<span class="nav-saved-count" hidden>0</span></button>
+      <button type="button" data-nav="a11y">Accessibility</button>
+    </nav>
+
+    <div class="header-actions">
+      <a class="btn btn-ghost btn-sm" id="storehouseLink" href="https://margastorehouse.org" target="_blank" rel="noopener">Storehouse</a>
+    </div>
+
+    <div class="mobile-header-actions">
+      <button class="mobile-search-btn" id="mobileSearchBtn" aria-label="Search" aria-expanded="false" aria-controls="searchPanel">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenuPanel">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- search panel floats off the full header, opened by either the desktop
+       pill (search-toggle) or the mobile icon (mobileSearchBtn) -->
+  <div class="search-panel" id="searchPanel">
+    <div class="search-panel-inner">
+      <div class="search-row">
+        <input type="text" class="search-input" id="searchInput" placeholder="Search papers, authors, topics…" />
+        <select class="scope-select" id="scopeSelect">
+          <option value="keywords">Keywords</option>
+          <option value="author">Author</option>
+          <option value="id">Paper ID</option>
+        </select>
+        <button type="button" class="btn-search" id="btnSearch">Search</button>
+      </div>
+
+      <button class="advanced-toggle" id="advancedToggle" aria-expanded="false" aria-controls="advancedPanel">
+        Advanced Search
+        <svg width="10" height="7" viewBox="0 0 10 7" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.6"/></svg>
+      </button>
+
+      <div class="advanced-panel" id="advancedPanel">
+        <div class="advanced-panel-inner">
+          <div class="advanced-grid">
+            <div class="field range-field">
+              <label>Publication year range</label>
+              <div class="range-slider" id="yearRange">
+                <div class="range-track"><div class="range-fill" id="rangeFill"></div></div>
+                <input type="range" id="rangeMin" min="1980" max="2026" value="1980" />
+                <input type="range" id="rangeMax" min="1980" max="2026" value="2026" />
+              </div>
+              <div class="range-values"><span id="rangeMinVal">1980</span><span id="rangeMaxVal">2026</span></div>
+              <p class="field-hint">Papers with an unspecified year are always included.</p>
+            </div>
+
+            <div class="field">
+              <label>Partner organization</label>
+              <select class="field-select" id="institutionSelect">
+                <option value="">Any partner organization</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Field of study</label>
+              <select class="field-select" id="fieldSelect">
+                <option value="">Any field of study</option>
+              </select>
+            </div>
+
+            <div class="field" style="grid-column:1/-1">
+              <label>Publication type</label>
+              <select class="field-select" id="litTypeSelect">
+                <option value="">Any publication type</option>
+              </select>
+            </div>
+          </div>
+          <button type="button" class="btn btn-gold btn-apply-advanced" id="btnApplyAdvanced">Apply Filters</button>
+          <button type="button" class="btn-reset-advanced" id="btnResetAdvanced">Reset all filters</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mobile-menu-panel" id="mobileMenuPanel">
+    <a href="#top" data-nav="home" class="active">Home</a>
+    <a href="#papers" data-nav="papers">Papers</a>
+    <button type="button" data-nav="contact">Contact Us</button>
+    <button type="button" data-nav="saved">Saved Papers<span class="nav-saved-count" hidden>0</span></button>
+    <button type="button" data-nav="a11y">Accessibility</button>
+  </div>
+</header>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <span class="eyebrow">Marga Institute · Est. 1972</span>
+      <h1>Sri Lanka<em>Research Hub</em></h1>
+      <p>The definitive home for Sri Lankan research - connecting scholars, policymakers, and communities through evidence-based knowledge.</p>
+      <div class="hero-cta">
+        <a class="btn btn-gold" href="#papers" data-nav="papers">Browse Research</a>
+        <button type="button" class="btn btn-outline-light" data-nav="contact">Contact Us</button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><b id="statPapers">-</b><span>Research Papers</span></div>
+        <div class="stat"><b id="statInstitutions">-</b><span>Partner Institutions</span></div>
+        <div class="stat"><b id="statAreas">-</b><span>Research Areas</span></div>
+        <div class="stat"><b id="statSince">-</b><span>Research Since</span></div>
+      </div>
+    </div>
+
+    <!-- desktop: paper spotlight, populated by script.js from paper.json -->
+    <div class="hero-spotlight-desktop" id="spotlightDesktop"></div>
+  </div>
+
+  <!-- mobile: rolling spotlight, one paper at a time -->
+  <div class="wrap hero-spotlight-mobile">
+    <div class="rolling-card">
+      <span class="rolling-label">Newest Papers</span>
+      <div class="rolling-slides" id="rollingSlides"></div>
+      <div class="rolling-dots" id="rollingDots"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     PAPER CARDS - browse / search / filter
+     ============================================================ -->
+<section class="section" id="papers">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow" style="justify-content:center;">Latest Additions</span>
+      <h2>Browse Research</h2>
+      <p>Search the catalogue or use Advanced Search in the header to filter by year, partner, field, or publication type.</p>
+    </div>
+
+    <div class="results-toolbar">
+      <span class="results-count" id="resultsCount">Loading papers…</span>
+      <div class="toolbar-right">
+        <select class="sort-select" id="sortSelect">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="cited">Most cited</option>
+          <option value="title">Title A–Z</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="active-filters" id="activeFilters" hidden></div>
+
+    <div class="paper-grid" id="paperGrid"></div>
+
+    <div class="load-more-wrap" id="loadMoreWrap" hidden>
+      <button type="button" class="btn btn-ghost" id="loadMoreBtn">Load more papers</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     NEWSLETTER
+     ============================================================ -->
+<section class="newsletter-band">
+  <div class="newsletter-inner">
+    <div class="newsletter-copy">
+      <span class="eyebrow">Stay Informed</span>
+      <h2>Receive our Newsletter</h2>
+      <p>New papers, policy briefs, and partner research - sent occasionally, never spam.</p>
+    </div>
+    <form class="newsletter-form" id="newsletterForm" novalidate>
+      <div class="newsletter-input-wrap">
+        <input type="email" id="newsletterEmail" placeholder="you@example.com" />
+        <span class="newsletter-error" id="newsletterError"></span>
+      </div>
+      <button type="submit" class="btn btn-gold">Subscribe</button>
+    </form>
+  </div>
+</section>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="logo" href="#top" data-nav="home">
+          <span class="logo-mark"></span>
+          <span class="logo-text"><span style="color:var(--white);">MARGA</span><small>Research Hub</small></span>
+        </a>
+        <p>Sri Lanka's definitive research repository - connecting knowledge, policy, and communities since 1972.</p>
+        <div class="footer-social">
+          <a href="https://www.facebook.com/margasrilanka/" target="_blank" rel="noopener" aria-label="Facebook"><i class="fa-brands fa-facebook-f" aria-hidden="true"></i></a>
+          <a href="https://www.instagram.com/margasrilanka/" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram" aria-hidden="true"></i></a>
+          <a href="https://www.linkedin.com/company/marga-institute" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i></a>
+          <a href="https://www.youtube.com/channel/UCmZRkQxS90gHvayx6sr4jtw" target="_blank" rel="noopener" aria-label="YouTube"><i class="fa-brands fa-youtube" aria-hidden="true"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h5>About</h5>
+        <a href="https://margasrilanka.org" target="_blank" rel="noopener">About Us</a>
+        <a href="https://margasrilanka.org/about-us/" target="_blank" rel="noopener">Our Mission</a>
+        <a href="https://margasrilanka.org/about-us/" target="_blank" rel="noopener">Our Team</a>
+        <a href="https://margasrilanka.org" target="_blank" rel="noopener">Partners</a>
+      </div>
+      <div class="footer-col">
+        <h5>Resources</h5>
+        <a href="https://margastorehouse.org" target="_blank" rel="noopener">Research Library</a>
+        <a href="https://margasrilanka.org" target="_blank" rel="noopener">Guidelines</a>
+        <a href="https://margastorehouse.org" target="_blank" rel="noopener">Toolkit</a>
+        <span class="fitem">API <span class="soon-badge">SOON</span></span>
+      </div>
+      <div class="footer-col">
+        <h5>Contact</h5>
+        <button type="button" data-nav="contact">Contact Us</button>
+        <button type="button" class="footer-mailto" data-mailto-subject="Support Request">Support</button>
+        <button type="button" class="footer-mailto" data-mailto-subject="Paper Contribution Inquiry">Contribute</button>
+        <span class="fitem">Colombo, Sri Lanka</span>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="footerYear">2026</span>Marga Institute · Sri Lanka Research Hub. All rights reserved.</span>
+      <em>Built for evidence-based policy &amp; public good.</em>
+    </div>
+  </div>
+</footer>
+
+<div class="footer-fab">
+  <button class="fab-btn fab-top" id="backToTopBtn" aria-label="Back to top">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <button class="fab-btn fab-chat" id="chatFabBtn" aria-label="Open chat" aria-expanded="false" aria-controls="chatPanel">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v12H8l-4 4V4z" stroke="currentColor" stroke-width="1.8"/></svg>
+    <span class="fab-ping"></span>
+  </button>
+</div>
+
+<div class="chat-panel" id="chatPanel" role="dialog" aria-label="Marga Assistant chat">
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <span class="chat-avatar"></span>
+      <div>
+        <strong>Marga Assistant</strong>
+        <span class="chat-status">Online</span>
+      </div>
+    </div>
+    <button class="chat-close" id="chatCloseBtn" aria-label="Close chat">&times;</button>
+  </div>
+
+  <div class="chat-body" id="chatBody">
+    <div class="chat-msg chat-msg-bot">
+      <p>Hi! I'm the Marga Research Hub assistant. Ask me about a topic or author and I'll search the catalogue, or use the options below.</p>
+    </div>
+  </div>
+
+  <div class="chat-quick-replies" id="chatQuickReplies">
+    <button type="button" class="chip" data-reply="browse">Browse papers</button>
+    <button type="button" class="chip" data-reply="request">Request a paper</button>
+    <button type="button" class="chip" data-reply="contact">Contact us</button>
+  </div>
+
+  <form class="chat-input-row" id="chatForm">
+    <input type="text" id="chatInput" placeholder="Try “climate” or an author name…" autocomplete="off" />
+    <button type="submit" class="chat-send" aria-label="Send message">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 12h16M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </form>
+</div>
+
+<div class="tour-overlay" id="tourOverlay" role="dialog" aria-modal="true" aria-label="Site tour" hidden>
+  <div class="tour-card">
+    <button class="tour-close" id="tourCloseBtn" aria-label="Skip tour">&times;</button>
+    <span class="eyebrow">Welcome to MARGA</span>
+    <h3>Take a quick tour</h3>
+    <div class="tour-step" id="tourStepText"></div>
+    <div class="tour-controls">
+      <button type="button" class="btn btn-ghost btn-sm" id="tourPrevBtn">Back</button>
+      <button type="button" class="btn btn-gold btn-sm" id="tourNextBtn">Next</button>
+    </div>
+    <div class="tour-progress" id="tourProgress"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL - Paper Detail
+     ============================================================ -->
+<div class="detail-overlay" id="detailOverlay" role="dialog" aria-modal="true" aria-label="Paper details">
+  <div class="detail-modal">
+    <button class="detail-modal-close" id="detailCloseBtn" aria-label="Close">&times;</button>
+    <div class="detail-modal-scroll" id="detailModalScroll">
+      <!-- populated by script.js -->
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL - Request Paper
+     ============================================================ -->
+<div class="modal-overlay" id="requestOverlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="requestTitle">
+    <button class="modal-close" id="requestClose" aria-label="Close">&times;</button>
+    <span class="eyebrow">Request Access</span>
+    <h3 id="requestTitle">Request this paper</h3>
+
+    <div class="modal-paper-summary">
+      <strong id="reqPaperTitle">-</strong>
+      <span id="reqPaperAuthors">-</span>
+    </div>
+
+    <div class="modal-field">
+      <label for="reqName">Your name</label>
+      <input id="reqName" type="text" placeholder="Full name" />
+      <span class="modal-field-error" id="reqNameError"></span>
+    </div>
+    <div class="modal-field">
+      <label for="reqEmail">Your email</label>
+      <input id="reqEmail" type="email" placeholder="you@example.com" />
+      <span class="modal-field-error" id="reqEmailError"></span>
+    </div>
+    <div class="modal-field">
+      <label for="reqNotes">Notes (optional)</label>
+      <textarea id="reqNotes" placeholder="Let us know why you'd like this paper, or anything else we should know."></textarea>
+    </div>
+
+    <button type="button" class="btn-primary" id="reqSend">Send Request</button>
+    <p class="modal-hint">This opens your email app with the request already written - you just hit send.</p>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL - Accessibility
+     ============================================================ -->
+<div class="modal-overlay" id="a11yOverlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="a11yTitle">
+    <button class="modal-close" id="a11yClose" aria-label="Close">&times;</button>
+    <span class="eyebrow">Our Commitment</span>
+    <h3 id="a11yTitle">Accessibility</h3>
+    <ul class="a11y-list">
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12.5 10 17 19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Every paper has a shareable link, so results can be reopened or sent directly to a colleague.</li>
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12.5 10 17 19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>All controls are keyboard-operable, with visible focus outlines and Escape-to-close on every panel and modal.</li>
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12.5 10 17 19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Motion is reduced automatically for anyone whose system preference asks for it.</li>
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12.5 10 17 19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Icon-only buttons carry text labels for screen readers.</li>
+    </ul>
+    <button type="button" class="btn btn-gold" id="a11yTourBtn">Help</button>
+    <p class="modal-hint">Spot something we should fix? Email <a href="mailto:admin@margasrilanka.org">admin@margasrilanka.org</a>.</p>
+  </div>
+</div>
+
+<div class="toast-region" id="toastRegion" aria-live="polite"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
