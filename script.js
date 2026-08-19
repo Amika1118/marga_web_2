@@ -6,19 +6,53 @@
    (blank fields, duplicate ids, inconsistent casing), so every
    read from a paper record goes through normalize() first.
    ============================================================ */
+
+// Paper count is responsive to the viewport width, so we can show more papers on larger screens without overwhelming smaller ones.
+const config = {
+  breakpoints: {
+    small: 0,    // 0px to 599px
+    medium: 500, // 600px to 1023px
+    large: 900  // 1024px and above
+  }
+};
+
+function updateNumber() {
+  const width = window.innerWidth;
+  let paper_number = 1;
+
+  if (width >= config.breakpoints.large) {
+    paper_number = 10;
+  } else if (width >= config.breakpoints.medium) {
+    paper_number = 8;
+  } else {
+    paper_number = 5;
+  }
+
+  return paper_number;
+}
+
 (function () {
   "use strict";
 
   /* ============================================================
      CONFIG
      ============================================================ */
+
   var CONTACT_EMAIL = "admin@margasrilanka.org"; // swap for the real inbox
   var STOREHOUSE_URL = "https://margastorehouse.org";
   var DATA_URL = "paper.json";
-  var PAGE_SIZE = 8;
+  var PAGE_SIZE = updateNumber();
   var ABSTRACT_TRUNCATE = 190;
   var TICKER_LIMIT = 20;
   var TOUR_STORAGE_KEY = "margaSiteTourSeen";
+  // Visitor counter: uses Abacus (abacus.jasoncameron.dev), a free, keyless
+  // counting API, so every visitor sees the same real, shared total instead
+  // of a number that only ever counted hits on their own browser.
+  var VISITOR_API_BASE = "https://abacus.jasoncameron.dev";
+  var VISITOR_NAMESPACE = "margasrilanka.org";
+  var VISITOR_KEY = "research-hub-visits";
+  var VISITOR_SESSION_KEY = "margaVisitorCounted"; // 1 increment per browser tab session
+  var VISITOR_CACHE_KEY = "margaVisitorCountCache"; // last-known value, for offline/API-down fallback
   var TOUR_STEPS = [
     {
       title: "Search the catalogue",
@@ -37,11 +71,11 @@
     },
     {
       title: "Save papers for later",
-      description:" Click the Save button on any paper to add it to your personal collection. Access your saved papers from the Saved Papers section."
+      description: " Click the Save button on any paper to add it to your personal collection. Access your saved papers from the Saved Papers section."
     },
     {
       title: "Marga Papers",
-      description:"Marga Papers will have the Marga Logo on the top left corner of the paper card."
+      description: "Marga Papers will have the Marga Logo on the top left corner of the paper card."
     }
   ];
 
@@ -389,6 +423,7 @@
     dom.statPapers = document.getElementById("statPapers");
     dom.statInstitutions = document.getElementById("statInstitutions");
     dom.statAreas = document.getElementById("statAreas");
+    dom.visitorCount = document.getElementById("visitorCount");
     dom.statSince = document.getElementById("statSince");
 
     dom.resultsCount = document.getElementById("resultsCount");
@@ -748,8 +783,8 @@
         state.scope === "author"
           ? "Author"
           : state.scope === "id"
-          ? "Paper ID"
-          : "Keywords";
+            ? "Paper ID"
+            : "Keywords";
       chips.push({
         label: scopeLabel + ': "' + state.query + '"',
         clear: function () {
@@ -1014,10 +1049,10 @@
       "</span>" +
       (p.litType
         ? '<span class="pill pill-status" data-status="' +
-          p.litType +
-          '">' +
-          escHtml(LITTYPE_LABELS[p.litType] || capitalize(p.litType)) +
-          "</span>"
+        p.litType +
+        '">' +
+        escHtml(LITTYPE_LABELS[p.litType] || capitalize(p.litType)) +
+        "</span>"
         : "") +
       '<span class="pill">' +
       iconSvg(p.areaIcon) +
@@ -1075,11 +1110,11 @@
 
     dom.resultsCount.innerHTML = total
       ? "Showing <strong>" +
-        toShow.length +
-        "</strong> of <strong>" +
-        total +
-        "</strong> paper" +
-        (total === 1 ? "" : "s")
+      toShow.length +
+      "</strong> of <strong>" +
+      total +
+      "</strong> paper" +
+      (total === 1 ? "" : "s")
       : "No papers found";
 
     if (!total) {
@@ -1227,7 +1262,7 @@
     var url = buildDeepLink(paper.key);
     var text = paper.title + (paper.authors ? " — " + shortAuthors(paper.authors) : "");
     if (navigator.share) {
-      navigator.share({ title: paper.title, text: text, url: url }).catch(function () {});
+      navigator.share({ title: paper.title, text: text, url: url }).catch(function () { });
     } else {
       copyText(url).then(function (ok) {
         showToast(
@@ -1255,13 +1290,13 @@
     var pdfUnavailable = !paper.pdfUrl || paper.pdfUrl === "#";
     var pdfBtn = pdfUnavailable
       ? '<button class="btn btn-gold btn-sm" type="button" data-action="pdf-unavailable" title="PDF unavailable">Open PDF ' +
-        SVG_EXTERNAL +
-        "</button>"
+      SVG_EXTERNAL +
+      "</button>"
       : '<a class="btn btn-gold btn-sm" href="' +
-        escHtml(paper.pdfUrl) +
-        '" target="_blank" rel="noopener">Open PDF ' +
-        SVG_EXTERNAL +
-        "</a>";
+      escHtml(paper.pdfUrl) +
+      '" target="_blank" rel="noopener">Open PDF ' +
+      SVG_EXTERNAL +
+      "</a>";
 
     var recents = recentlyViewed
       .filter(function (k) {
@@ -1270,21 +1305,21 @@
       .slice(0, 5);
     var recentHTML = recents.length
       ? recents
-          .map(function (k) {
-            var rp = findByKey(k);
-            if (!rp) return "";
-            return (
-              '<button type="button" class="recent-item" data-recent-key="' +
-              rp.key +
-              '">' +
-              escHtml(rp.title) +
-              '<span>' +
-              escHtml(shortAuthors(rp.authors)) +
-              (rp.year ? " — " + escHtml(rp.year) : "") +
-              "</span></button>"
-            );
-          })
-          .join("")
+        .map(function (k) {
+          var rp = findByKey(k);
+          if (!rp) return "";
+          return (
+            '<button type="button" class="recent-item" data-recent-key="' +
+            rp.key +
+            '">' +
+            escHtml(rp.title) +
+            '<span>' +
+            escHtml(shortAuthors(rp.authors)) +
+            (rp.year ? " — " + escHtml(rp.year) : "") +
+            "</span></button>"
+          );
+        })
+        .join("")
       : '<p class="sidebar-empty">Papers you view will show up here for quick access.</p>';
 
     dom.detailModalScroll.innerHTML =
@@ -1311,10 +1346,10 @@
       "</span>" +
       (paper.litType
         ? '<span class="pill pill-status" data-status="' +
-          paper.litType +
-          '">' +
-          escHtml(LITTYPE_LABELS[paper.litType] || capitalize(paper.litType)) +
-          "</span>"
+        paper.litType +
+        '">' +
+        escHtml(LITTYPE_LABELS[paper.litType] || capitalize(paper.litType)) +
+        "</span>"
         : "") +
       '<span class="pill">' +
       iconSvg(paper.areaIcon) +
@@ -1327,9 +1362,9 @@
       "</p>" +
       (paper.partnerName
         ? "<h4>Partner</h4><p>" +
-          escHtml(paper.partnerName) +
-          (partnerLabel ? " · " + escHtml(partnerLabel) : "") +
-          "</p>"
+        escHtml(paper.partnerName) +
+        (partnerLabel ? " · " + escHtml(partnerLabel) : "") +
+        "</p>"
         : "") +
       "</div>" +
       '<div class="detail-actions">' +
@@ -1466,14 +1501,14 @@
       "</div>" +
       (isMain
         ? '<div class="tags"><span class="tag-chip">' +
-          iconSvg(p.areaIcon) +
-          "<span>" +
-          escHtml(p.areaName) +
-          "</span></span>" +
-          (p.partnerName
-            ? '<span class="tag-chip"><span>' + escHtml(p.partnerName) + "</span></span>"
-            : "") +
-          "</div>"
+        iconSvg(p.areaIcon) +
+        "<span>" +
+        escHtml(p.areaName) +
+        "</span></span>" +
+        (p.partnerName
+          ? '<span class="tag-chip"><span>' + escHtml(p.partnerName) + "</span></span>"
+          : "") +
+        "</div>"
         : "") +
       "</button>"
     );
@@ -1595,6 +1630,61 @@
   /* ============================================================
      STATS
      ============================================================ */
+  function renderVisitorCount(count) {
+    if (!dom.visitorCount) return;
+    if (typeof count !== "number" || !isFinite(count) || count <= 0) return;
+    dom.visitorCount.textContent = String(Math.round(count)).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    try {
+      window.localStorage.setItem(VISITOR_CACHE_KEY, String(Math.round(count)));
+    } catch (e) {
+      /* private browsing / storage disabled — display still works, just isn't cached */
+    }
+  }
+
+  function updateVisitorCount() {
+    if (!dom.visitorCount) return;
+
+    var alreadyCountedThisSession = false;
+    try {
+      alreadyCountedThisSession = window.sessionStorage.getItem(VISITOR_SESSION_KEY) === "1";
+    } catch (e) {
+      /* sessionStorage unavailable — treat as not yet counted */
+    }
+
+    // Only increment once per browser tab session, so reloading the page
+    // (or browsing between pages) doesn't inflate the shared total; every
+    // other load just reads the current value.
+    var action = alreadyCountedThisSession ? "get" : "hit";
+    var url = VISITOR_API_BASE + "/" + action + "/" + VISITOR_NAMESPACE + "/" + VISITOR_KEY;
+
+    fetch(url, { cache: "no-store" })
+      .then(function (res) {
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        if (!alreadyCountedThisSession) {
+          try {
+            window.sessionStorage.setItem(VISITOR_SESSION_KEY, "1");
+          } catch (e) {
+            /* sessionStorage unavailable — count still displays correctly */
+          }
+        }
+        renderVisitorCount(data && data.value);
+      })
+      .catch(function () {
+        // Counter API unreachable (offline, blocked, etc.) — fall back to the
+        // last value we successfully fetched rather than showing nothing.
+        var cached = null;
+        try {
+          cached = Number(window.localStorage.getItem(VISITOR_CACHE_KEY));
+        } catch (e) {
+          cached = null;
+        }
+        if (cached && !Number.isNaN(cached) && cached > 0) renderVisitorCount(cached);
+      });
+  }
+
   function renderStats() {
     // var institutions = uniqueNonEmpty(
     //   state.papers.map(function (p) {
@@ -1616,42 +1706,46 @@
     // dom.statInstitutions.textContent = String(institutions.length);
     // dom.statAreas.textContent = String(areas.length);
     // dom.statSince.textContent = years.length ? String(Math.min.apply(null, years)) : "—";
-        // Only hero statistics are fixed and no other page behavior changes.
+    // Only hero statistics are fixed and no other page behavior changes.
     dom.statPapers.textContent = "1200";
     dom.statInstitutions.textContent = "25";
     dom.statAreas.textContent = "18";
     dom.statSince.textContent = "1972";
-  
+    updateVisitorCount();
   }
 
-  /* ============================================================
-     REQUEST PAPER MODAL
-     ============================================================ */
+  function clearRequestErrors() {
+    if (dom.reqName) {
+      dom.reqName.classList.remove("has-error");
+    }
+    if (dom.reqEmail) {
+      dom.reqEmail.classList.remove("has-error");
+    }
+    if (dom.reqNameError) dom.reqNameError.textContent = "";
+    if (dom.reqEmailError) dom.reqEmailError.textContent = "";
+  }
+
   function openRequestModal(title, authors) {
+    if (!dom.reqPaperTitle || !dom.reqPaperAuthors || !dom.requestOverlay) return;
     dom.reqPaperTitle.textContent = title;
     dom.reqPaperAuthors.textContent = authors;
-    dom.reqName.value = "";
-    dom.reqEmail.value = "";
-    dom.reqNotes.value = "";
+    if (dom.reqName) dom.reqName.value = "";
+    if (dom.reqEmail) dom.reqEmail.value = "";
+    if (dom.reqNotes) dom.reqNotes.value = "";
     clearRequestErrors();
     dom.requestOverlay.classList.add("is-open");
     document.body.style.overflow = "hidden";
     setTimeout(function () {
-      dom.reqName.focus();
+      if (dom.reqName) dom.reqName.focus();
     }, 150);
   }
+
   function closeRequestModal() {
+    if (!dom.requestOverlay) return;
     dom.requestOverlay.classList.remove("is-open");
-    document.body.style.overflow = dom.detailOverlay.classList.contains("is-open")
-      ? "hidden"
-      : "";
+    document.body.style.overflow = dom.detailOverlay && dom.detailOverlay.classList.contains("is-open") ? "hidden" : "";
   }
-  function clearRequestErrors() {
-    dom.reqName.classList.remove("has-error");
-    dom.reqEmail.classList.remove("has-error");
-    dom.reqNameError.textContent = "";
-    dom.reqEmailError.textContent = "";
-  }
+
   function validateRequestForm() {
     var valid = true;
     clearRequestErrors();
@@ -1935,10 +2029,10 @@
               );
               addChatMessage(
                 'You can reach the team directly at <a href="' +
-                  mailto +
-                  '">' +
-                  CONTACT_EMAIL +
-                  "</a>, or use Contact Us in the menu.",
+                mailto +
+                '">' +
+                CONTACT_EMAIL +
+                "</a>, or use Contact Us in the menu.",
                 "bot",
                 true
               );
@@ -1963,8 +2057,8 @@
         } else {
           addChatMessage(
             "I couldn't find a paper matching that. Try a topic or author name, or email " +
-              CONTACT_EMAIL +
-              " and the team will help directly.",
+            CONTACT_EMAIL +
+            " and the team will help directly.",
             "bot"
           );
         }

@@ -908,6 +908,35 @@ p {
   flex-wrap: wrap;
 }
 
+.hero-visitor-counter {
+  margin-top: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: rgba(249, 241, 228, 0.05);
+  border: 1px solid rgba(249, 241, 228, 0.18);
+  color: var(--cream);
+}
+
+.visitor-label {
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(249, 241, 228, .72);
+  font-weight: 700;
+}
+
+.hero-visitor-counter strong {
+  display: inline-block;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gold-light);
+  min-width: 3ch;
+  text-align: right;
+}
+
 .hero-stats {
   display: flex;
   gap: 36px;
