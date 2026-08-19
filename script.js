@@ -7,12 +7,13 @@
    read from a paper record goes through normalize() first.
    ============================================================ */
 
+
 // Paper count is responsive to the viewport width, so we can show more papers on larger screens without overwhelming smaller ones.
 const config = {
   breakpoints: {
-    small: 0,    // 0px to 599px
-    medium: 500, // 600px to 1023px
-    large: 900  // 1024px and above
+    small: 0,
+    medium: 500,
+    large: 900
   }
 };
 
@@ -37,7 +38,6 @@ function updateNumber() {
   /* ============================================================
      CONFIG
      ============================================================ */
-
   var CONTACT_EMAIL = "admin@margasrilanka.org"; // swap for the real inbox
   var STOREHOUSE_URL = "https://margastorehouse.org";
   var DATA_URL = "paper.json";
@@ -45,9 +45,7 @@ function updateNumber() {
   var ABSTRACT_TRUNCATE = 190;
   var TICKER_LIMIT = 20;
   var TOUR_STORAGE_KEY = "margaSiteTourSeen";
-  // Visitor counter: uses Abacus (abacus.jasoncameron.dev), a free, keyless
-  // counting API, so every visitor sees the same real, shared total instead
-  // of a number that only ever counted hits on their own browser.
+  var SAVED_STORAGE_KEY = "margaSavedPapers"; 
   var VISITOR_API_BASE = "https://abacus.jasoncameron.dev";
   var VISITOR_NAMESPACE = "margasrilanka.org";
   var VISITOR_KEY = "research-hub-visits";
@@ -164,9 +162,27 @@ function updateNumber() {
     sort: "newest",
     savedOnly: false
   };
+  function loadSavedPapers() {
+    try {
+      var raw = window.localStorage.getItem(SAVED_STORAGE_KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      return new Set(Array.isArray(arr) ? arr : []);
+    } catch (e) {
+      return new Set(); // storage unavailable/corrupted — start with an empty saved list
+    }
+  }
+
+  function persistSavedPapers() {
+    try {
+      window.localStorage.setItem(SAVED_STORAGE_KEY, JSON.stringify(Array.from(saved)));
+    } catch (e) {
+      // private browsing / storage full / disabled — saving still works for the rest of this tab
+    }
+  }
+
   var papersByKey = {};
   var dataBounds = { yearMin: 1980, yearMax: new Date().getFullYear() };
-  var saved = new Set();
+  var saved = loadSavedPapers();
   var recentlyViewed = [];
   var currentDetailPaper = null;
   var lastFocusedBeforeModal = null;
@@ -294,6 +310,14 @@ function updateNumber() {
   /* ============================================================
      DATA LOADING + NORMALIZATION
      ============================================================ */
+  function parseFlag(v) {
+    // Accepts a real JSON boolean, or common string spellings someone
+    // hand-editing paper.json might type ("true", "yes", "1", blank, etc.)
+    if (v === true) return true;
+    if (typeof v === "string") return /^(true|yes|y|1)$/i.test(v.trim());
+    return false;
+  }
+
   function normalize(raw, index) {
     var key = index + "::" + (raw.id || "noid");
     var yearStr = (raw.year || "").toString().trim();
@@ -317,6 +341,7 @@ function updateNumber() {
       yearNum: yearNum,
       partner: (raw.partner || "").toString().trim(),
       partnerName: (raw.partnerName || "").toString().trim(),
+      isMarga: parseFlag(raw.isMarga),
       area: (raw.area || "").toString().trim(),
       areaName: (raw.areaName || "General").toString().trim(),
       areaIcon: (raw.areaIcon || "").toString().trim(),
@@ -1021,7 +1046,7 @@ function updateNumber() {
   }
 
   function cardHTML(p) {
-    var isMarga = /marga/i.test(p.partnerName);
+    var isMarga = p.isMarga;
     var isSaved = saved.has(p.key);
     return (
       '<article class="paper-card' +
@@ -1165,6 +1190,7 @@ function updateNumber() {
   function toggleSave(paper) {
     if (saved.has(paper.key)) saved.delete(paper.key);
     else saved.add(paper.key);
+    persistSavedPapers();
     updateSavedCount();
   }
 
@@ -1294,7 +1320,7 @@ function updateNumber() {
       "</button>"
       : '<a class="btn btn-gold btn-sm" href="' +
       escHtml(paper.pdfUrl) +
-      '" target="_blank" rel="noopener">Open PDF ' +
+      '" target="_blank" rel="nofollow noopener">Open PDF ' +
       SVG_EXTERNAL +
       "</a>";
 
@@ -1326,7 +1352,7 @@ function updateNumber() {
       '<div class="detail-layout">' +
       '<div class="detail-main">' +
       '<div class="detail-head">' +
-      (/marga/i.test(paper.partnerName)
+      (paper.isMarga
         ? '<span class="marga-badge" title="Published via Marga Institute" style="position:static;flex:none;"></span>'
         : "") +
       "<div><h3>" +
