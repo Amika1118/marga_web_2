@@ -20,6 +20,7 @@
   --line: #E7DCC9;
   --line-dark: rgba(249, 241, 228, 0.16);
   --white: #FFFFFF;
+  --surface: #FFFFFF;
   --radius-s: 8px;
   --radius-m: 14px;
   --radius-l: 22px;
@@ -45,6 +46,148 @@
   :root {
     --header-h: 74px;
   }
+}
+
+/* ============================================================
+   DARK MODE
+   Toggled by adding data-theme="dark" to <html> (see script.js).
+   Structural tokens are redefined here; brand maroon surfaces
+   (hero, footer, buttons, badges) are already dark and are left
+   untouched on purpose, so only the light surfaces/text invert.
+   ============================================================ */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --paper-bg: #0C0C0C;
+  --surface: #171515;
+  --ink: #F5F5F5;
+  --ink-soft: #d3cfcf;
+  --line: rgba(212, 169, 55, 0.22);
+  --dark-accent: var(--gold-light);
+  --dark-accent-border: var(--gold);
+}
+
+/* headings/emphasis that used the darkest brand ink for contrast
+   on a light surface now read as bright warm text instead */
+html[data-theme="dark"] .section-head h2,
+html[data-theme="dark"] .logo-text span,
+html[data-theme="dark"] .results-count strong,
+html[data-theme="dark"] .paper-card h3,
+html[data-theme="dark"] .empty-state h3,
+html[data-theme="dark"] .error-state h3,
+html[data-theme="dark"] .tour-card h3,
+html[data-theme="dark"] .detail-head h3,
+html[data-theme="dark"] .modal h3,
+html[data-theme="dark"] .modal-paper-summary strong {
+  color: var(--ink);
+}
+
+/* interactive accents (hover/active states, icons, small labels)
+   swap the maroon accent for a rose highlight, kept crisp against
+   the near-black surface for a minimal, high-contrast dark mode */
+html[data-theme="dark"] .btn-ghost:hover:not(:disabled),
+html[data-theme="dark"] .icon-btn:hover,
+html[data-theme="dark"] .search-toggle svg,
+html[data-theme="dark"] .mobile-search-btn,
+html[data-theme="dark"] .mobile-theme-btn,
+html[data-theme="dark"] .advanced-toggle,
+html[data-theme="dark"] .range-values span,
+html[data-theme="dark"] .btn-reset-advanced:hover,
+html[data-theme="dark"] .main-nav a:hover,
+html[data-theme="dark"] .main-nav a.active,
+html[data-theme="dark"] .main-nav button:hover,
+html[data-theme="dark"] .main-nav button.active,
+html[data-theme="dark"] .mobile-menu-btn,
+html[data-theme="dark"] .mobile-menu-panel a.active,
+html[data-theme="dark"] .mobile-menu-panel button.active,
+html[data-theme="dark"] .paper-card h3 button:hover,
+html[data-theme="dark"] .pill,
+html[data-theme="dark"] .read-more,
+html[data-theme="dark"] .empty-state svg,
+html[data-theme="dark"] .error-state svg,
+html[data-theme="dark"] .tour-close:hover,
+html[data-theme="dark"] .detail-modal-close:hover,
+html[data-theme="dark"] .detail-body h4,
+html[data-theme="dark"] .detail-sidebar h4,
+html[data-theme="dark"] .recent-item:hover,
+html[data-theme="dark"] .chat-result-btn,
+html[data-theme="dark"] .chip,
+html[data-theme="dark"] .a11y-list svg {
+  color: var(--dark-accent);
+}
+
+html[data-theme="dark"] .btn-ghost:hover:not(:disabled),
+html[data-theme="dark"] .icon-btn:hover,
+html[data-theme="dark"] .search-toggle:hover,
+html[data-theme="dark"] .search-toggle[aria-expanded="true"],
+html[data-theme="dark"] .search-input:focus,
+html[data-theme="dark"] .detail-modal-close:hover,
+html[data-theme="dark"] .chat-result-btn:hover,
+html[data-theme="dark"] .chat-input-row input:focus {
+  border-color: var(--dark-accent-border);
+}
+
+/* select-arrow SVGs are baked in as data-URIs with a fixed stroke
+   color, so dark mode needs its own lighter arrow */
+html[data-theme="dark"] .field-select,
+html[data-theme="dark"] .sort-select {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6"><path d="M1 1l4 4 4-4" stroke="%23999999" stroke-width="1.5" fill="none"/></svg>');
+}
+
+/* status pills used solid light boxes designed for a cream card;
+   on dark cards they become low-opacity tinted chips instead */
+html[data-theme="dark"] .pill-status[data-status="published"] {
+  background: rgba(63, 125, 79, .16);
+  border-color: rgba(63, 125, 79, .4);
+  color: #7FCB93;
+}
+
+html[data-theme="dark"] .pill-status[data-status="unpublished"] {
+  background: rgba(138, 106, 47, .2);
+  border-color: rgba(212, 169, 55, .4);
+  color: var(--gold-light);
+}
+
+html[data-theme="dark"] .pill-status[data-status="presentation"] {
+  background: rgba(94, 59, 132, .22);
+  border-color: rgba(160, 110, 210, .45);
+  color: #C9A8EA;
+}
+
+html[data-theme="dark"] .pill-status[data-status="report"] {
+  background: rgba(47, 108, 138, .2);
+  border-color: rgba(90, 165, 205, .45);
+  color: #7EC3E8;
+}
+
+/* skeleton shimmer used a hardcoded light highlight color */
+html[data-theme="dark"] .sk {
+  background: linear-gradient(90deg, var(--line) 25%, #2C2C2C 37%, var(--line) 63%);
+  background-size: 400% 100%;
+}
+
+/* smooth crossfade when the theme changes */
+body,
+.site-header,
+.search-panel,
+.mobile-menu-panel,
+.paper-card,
+.skeleton-card,
+.modal,
+.detail-modal,
+.chat-panel,
+.chat-msg-bot,
+.tour-card,
+.detail-sidebar,
+input,
+select,
+textarea,
+.field-select,
+.sort-select,
+.scope-select,
+.pill,
+.chip,
+.filter-chip {
+  transition: background-color .25s ease, color .25s ease, border-color .25s ease;
 }
 
 * {
@@ -233,7 +376,7 @@ p {
   height: 38px;
   border-radius: 50%;
   border: 1.5px solid var(--line);
-  background: var(--white);
+  background: var(--surface);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -245,6 +388,54 @@ p {
 .icon-btn:hover {
   border-color: var(--maroon-700);
   color: var(--maroon-800);
+}
+
+/* ---------- theme toggle (desktop + mobile share this markup) ---------- */
+.theme-toggle {
+  position: relative;
+}
+
+.mobile-theme-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--maroon-900);
+  flex: none;
+}
+
+.theme-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity .25s ease, transform .35s ease;
+}
+
+.theme-icon-sun {
+  opacity: 0;
+  transform: rotate(-90deg) scale(.4);
+}
+
+.theme-icon-moon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+html[data-theme="dark"] .theme-icon-sun {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+html[data-theme="dark"] .theme-icon-moon {
+  opacity: 0;
+  transform: rotate(90deg) scale(.4);
 }
 
 .section {
@@ -285,7 +476,7 @@ p {
   position: sticky;
   top: 0;
   z-index: 60;
-  background: var(--white);
+  background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
 
@@ -422,7 +613,7 @@ p {
   top: 100%;
   left: 0;
   right: 0;
-  background: var(--white);
+  background: var(--surface);
   border-top: 1px solid var(--line);
   box-shadow: var(--shadow-pop);
   padding: 18px 32px;
@@ -482,7 +673,7 @@ p {
   padding: 11px 16px;
   font-size: 14px;
   font-family: inherit;
-  background: var(--white);
+  background: var(--surface);
   color: var(--ink);
 }
 
@@ -497,7 +688,7 @@ p {
   padding: 11px 14px;
   font-size: 13.5px;
   font-family: inherit;
-  background: var(--white) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6"><path d="M1 1l4 4 4-4" stroke="%236B5257" stroke-width="1.5" fill="none"/></svg>') no-repeat right 12px center;
+  background: var(--surface) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6"><path d="M1 1l4 4 4-4" stroke="%236B5257" stroke-width="1.5" fill="none"/></svg>') no-repeat right 12px center;
   appearance: none;
   padding-right: 28px;
   color: var(--ink);
@@ -593,7 +784,7 @@ p {
   font-size: 14px;
   font-family: inherit;
   width: 100%;
-  background: var(--white);
+  background: var(--surface);
   color: var(--ink);
 }
 
@@ -765,7 +956,8 @@ p {
 }
 
 @media (max-width:1024px) {
-  .header-actions .btn {
+  .header-actions .btn,
+  .header-actions .theme-toggle {
     display: none;
   }
 }
@@ -786,7 +978,7 @@ p {
 .mobile-menu-panel {
   display: none;
   flex-direction: column;
-  background: var(--white);
+  background: var(--surface);
   border-top: 1px solid var(--line);
   padding: 8px 20px 18px;
 }
@@ -1344,7 +1536,7 @@ p {
   font-size: 13px;
   font-family: inherit;
   font-weight: 600;
-  background: var(--white) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6"><path d="M1 1l4 4 4-4" stroke="%236B5257" stroke-width="1.5" fill="none"/></svg>') no-repeat right 12px center;
+  background: var(--surface) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6"><path d="M1 1l4 4 4-4" stroke="%236B5257" stroke-width="1.5" fill="none"/></svg>') no-repeat right 12px center;
   appearance: none;
   color: var(--ink);
 }
@@ -1424,7 +1616,7 @@ p {
 
 .paper-card {
   position: relative;
-  background: var(--white);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-m);
   padding: 24px;
@@ -1604,7 +1796,7 @@ p {
 
 /* skeleton loading state */
 .skeleton-card {
-  background: var(--white);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-m);
   padding: 24px;
@@ -1663,7 +1855,7 @@ p {
   grid-column: 1/-1;
   text-align: center;
   padding: 56px 24px;
-  background: var(--white);
+  background: var(--surface);
   border: 1px dashed var(--line);
   border-radius: var(--radius-m);
   display: flex;
@@ -1846,7 +2038,7 @@ p {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--white);
+  background: var(--surface);
   border: 1px solid var(--line);
   font-size: 20px;
   color: var(--ink-soft);
@@ -1933,7 +2125,7 @@ p {
 }
 
 .detail-sidebar {
-  background: var(--white);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-m);
   padding: 18px;
@@ -2279,7 +2471,7 @@ p {
   bottom: 90px;
   width: 340px;
   max-width: calc(100vw - 32px);
-  background: var(--white);
+  background: var(--surface);
   border-radius: var(--radius-l);
   box-shadow: var(--shadow-pop);
   display: flex;
@@ -2406,7 +2598,7 @@ p {
 
 .chat-msg-bot {
   align-self: flex-start;
-  background: var(--white);
+  background: var(--surface);
   border: 1px solid var(--line);
   color: var(--ink);
   border-bottom-left-radius: 4px;
@@ -2442,7 +2634,7 @@ p {
 
 .chat-result-btn:hover {
   border-color: var(--maroon-700);
-  background: var(--white);
+  background: var(--surface);
 }
 
 .chat-result-btn span {
@@ -2503,7 +2695,7 @@ p {
 .chip {
   border: 1.5px solid var(--maroon-700);
   color: var(--maroon-800);
-  background: var(--white);
+  background: var(--surface);
   border-radius: 999px;
   padding: 7px 13px;
   font-size: 12.5px;
@@ -2532,7 +2724,7 @@ p {
   padding: 10px 15px;
   font-size: 13.5px;
   font-family: inherit;
-  background: var(--white);
+  background: var(--surface);
 }
 
 .chat-input-row input:focus {
@@ -2628,7 +2820,7 @@ p {
 .modal-paper-summary {
   margin-top: 16px;
   padding: 14px 16px;
-  background: var(--white);
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-s);
 }
@@ -2670,7 +2862,7 @@ p {
   font-size: 14px;
   font-family: inherit;
   width: 100%;
-  background: var(--white);
+  background: var(--surface);
 }
 
 .modal-field input.has-error,
@@ -2793,7 +2985,7 @@ p {
 
 /* demo section framing */
 .demo-frame {
-  background: var(--white);
+  background: var(--surface);
   border: 1px dashed var(--line);
   border-radius: 16px;
   padding: 6px;

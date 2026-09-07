@@ -45,7 +45,8 @@ function updateNumber() {
   var ABSTRACT_TRUNCATE = 190;
   var TICKER_LIMIT = 20;
   var TOUR_STORAGE_KEY = "margaSiteTourSeen";
-  var SAVED_STORAGE_KEY = "margaSavedPapers"; 
+  var SAVED_STORAGE_KEY = "margaSavedPapers";
+  var THEME_STORAGE_KEY = "margaThemePref"; // "dark" | "light" — applied pre-paint by the inline snippet in index.html
   var VISITOR_API_BASE = "https://abacus.jasoncameron.dev";
   var VISITOR_NAMESPACE = "margasrilanka.org";
   var VISITOR_KEY = "research-hub-visits";
@@ -418,6 +419,8 @@ function updateNumber() {
      ============================================================ */
   var dom = {};
   function cacheDom() {
+    dom.themeToggles = document.querySelectorAll(".theme-toggle");
+
     dom.searchToggle = document.getElementById("searchToggle");
     dom.mobileSearchBtn = document.getElementById("mobileSearchBtn");
     dom.searchPanel = document.getElementById("searchPanel");
@@ -623,6 +626,46 @@ function updateNumber() {
   function closeMobileMenu() {
     dom.mobileMenuPanel.classList.remove("is-open");
     dom.mobileMenuBtn.setAttribute("aria-expanded", "false");
+  }
+
+  /* ============================================================
+     THEME (light / dark)
+     The inline snippet in index.html's <head> already applies the
+     stored/preferred theme before first paint (avoids a flash of
+     the wrong theme). This just wires the toggle button(s) and
+     keeps their icon/label state in sync.
+     ============================================================ */
+  function applyTheme(theme, persist) {
+    if (theme === "dark") {
+      document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+    }
+    if (persist) {
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, theme);
+      } catch (e) { }
+    }
+    var isDark = theme === "dark";
+    Array.prototype.forEach.call(dom.themeToggles || [], function (btn) {
+      btn.setAttribute("aria-pressed", isDark ? "true" : "false");
+      var label = isDark ? "Switch to light mode" : "Switch to dark mode";
+      btn.setAttribute("aria-label", label);
+      btn.title = label;
+    });
+  }
+
+  function wireTheme() {
+    if (!dom.themeToggles || !dom.themeToggles.length) return;
+    Array.prototype.forEach.call(dom.themeToggles, function (btn) {
+      btn.addEventListener("click", function () {
+        var isDark = document.documentElement.getAttribute("data-theme") === "dark";
+        applyTheme(isDark ? "light" : "dark", true);
+      });
+    });
+    // sync button state with whatever the pre-paint snippet already applied
+    var current = document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    applyTheme(current, false);
   }
 
   function wireHeader() {
@@ -2165,6 +2208,7 @@ function updateNumber() {
   function init() {
     if (!wired) {
       cacheDom();
+      wireTheme();
       wireHeader();
       wireToolbar();
       wireGridDelegation();
