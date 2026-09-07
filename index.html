@@ -512,6 +512,23 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
   <script src="script.js"></script>
+  <script>
+    function openOfflinePage() {
+      if (window.location.pathname.endsWith("/offline.html")) return;
+      window.location.replace("offline.html");
+    }
+
+    if (navigator.onLine === false) openOfflinePage();
+    window.addEventListener("offline", openOfflinePage);
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js").catch(function (error) {
+          console.warn("Offline fallback could not be registered:", error);
+        });
+      });
+    }
+  </script>
 </body>
 
 </html>

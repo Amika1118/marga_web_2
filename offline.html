@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+        // Same pre-paint theme read as the main site, so this page never
+        // flashes the wrong theme if it's reached mid-session.
+        (function () {
+            try {
+                var stored = localStorage.getItem("margaThemePref");
+                var wantsDark = stored
+                    ? stored === "dark"
+                    : window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+                if (wantsDark) document.documentElement.setAttribute("data-theme", "dark");
+            } catch (e) { }
+        })();
+    </script>
+    <title>You're offline - MARGA Research Hub</title>
+    <meta name="robots" content="noindex" />
+
+    <style>
+        /* ============================================================
+       Brand tokens - copied from styles.css so this page renders
+       correctly with zero network requests (no Google Fonts,
+       no Font Awesome, no CDN scripts).
+       ============================================================ */
+        :root {
+            --maroon-950: #3F0D16;
+            --maroon-900: #57121E;
+            --maroon-800: #6E1A28;
+            --maroon-700: #84202F;
+            --gold: #D4A937;
+            --gold-light: #EAD08A;
+            --cream: #F9F1E4;
+            --ink: #2A1013;
+            --ink-soft: #6B5257;
+            --line-dark: rgba(249, 241, 228, 0.16);
+            --font-display: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+            --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        html[data-theme="dark"] {
+            color-scheme: dark;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            font-family: var(--font-body);
+            color: var(--cream);
+            background: radial-gradient(120% 140% at 15% 0%, var(--maroon-700), var(--maroon-950) 70%);
+        }
+
+        .card {
+            width: 100%;
+            max-width: 440px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .mark {
+            width: 76px;
+            height: 76px;
+            border-radius: 16px;
+            object-fit: cover;
+            border: 1.5px solid var(--line-dark);
+            margin-bottom: 20px;
+            flex: none;
+            box-shadow: 0 14px 30px rgba(0, 0, 0, .2);
+        }
+
+        .eyebrow {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--gold-light);
+            margin: 0 0 10px;
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 26px;
+            line-height: 1.3;
+            margin: 0 0 12px;
+            color: var(--cream);
+        }
+
+        p.lede {
+            font-size: 15px;
+            line-height: 1.6;
+            color: rgba(249, 241, 228, 0.78);
+            max-width: 38ch;
+            margin: 0 0 26px;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--line-dark);
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(249, 241, 228, 0.85);
+            margin-bottom: 28px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #C24B4B;
+            flex: none;
+            transition: background .2s ease;
+        }
+
+        .status.is-online .status-dot {
+            background: #4FAE68;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 13px 24px;
+            border-radius: 999px;
+            border: 1.5px solid transparent;
+            font-weight: 600;
+            font-size: 14.5px;
+            cursor: pointer;
+            transition: transform .15s ease, box-shadow .15s ease, background .15s ease, color .15s ease, opacity .15s ease;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-gold {
+            background: var(--gold);
+            color: var(--maroon-950);
+        }
+
+        .btn-gold:hover {
+            background: var(--gold-light);
+            box-shadow: 0 10px 24px -10px rgba(212, 169, 55, .55);
+        }
+
+        .btn-outline-light {
+            background: transparent;
+            border-color: rgba(249, 241, 228, .5);
+            color: var(--cream);
+            text-decoration: none;
+        }
+
+        .btn-outline-light:hover {
+            background: rgba(249, 241, 228, .1);
+            border-color: var(--cream);
+        }
+
+        .fine-print {
+            margin-top: 28px;
+            font-size: 12.5px;
+            color: rgba(249, 241, 228, 0.55);
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+            .card {
+                animation: rise .5s ease both;
+            }
+        }
+
+        @keyframes rise {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="card">
+        <img class="mark" src="site_logo/marga-logo.jpg" alt="Marga Institute logo" />
+
+        <p class="eyebrow">MARGA Research Hub</p>
+        <h1 id="pageHeading">Sorry, we can't reach the Hub right now</h1>
+        <p class="lede" id="pageBody">
+            This can happen if your device has lost its internet connection, or if the
+            site is briefly down on our end. Nothing on your end is broken — please try again in a moment.
+        </p>
+
+        <div class="status" id="statusPill">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">Checking your connection…</span>
+        </div>
+
+        <div class="actions">
+            <button type="button" class="btn btn-gold" id="retryBtn">Try Again</button>
+            <a class="btn btn-outline-light" href="index.html">Go to Homepage</a>
+        </div>
+
+        <p class="fine-print">If this keeps happening, email us at admin@margasrilanka.org.</p>
+    </main>
+
+    <script>
+        (function () {
+            var statusPill = document.getElementById("statusPill");
+            var statusDot = document.getElementById("statusDot");
+            var statusText = document.getElementById("statusText");
+            var heading = document.getElementById("pageHeading");
+            var body = document.getElementById("pageBody");
+            var retryBtn = document.getElementById("retryBtn");
+
+            function setOnlineUI(isOnline) {
+                if (isOnline) {
+                    statusPill.classList.add("is-online");
+                    statusText.textContent = "Connection restored - checking the Hub…";
+                    heading.textContent = "Looks like you're back";
+                    body.textContent = "The homepage will open when it is available again.";
+                } else {
+                    statusPill.classList.remove("is-online");
+                    statusText.textContent = "You're offline";
+                    heading.textContent = "Sorry, we can't reach the Hub right now";
+                    body.textContent = "This can happen if your device has lost its internet connection, or if the site is briefly down on our end. Nothing on your end is broken — please try again in a moment.";
+                }
+            }
+
+            function checkHomepage(showTrying) {
+                if (showTrying) statusText.textContent = "Trying again…";
+                fetch("index.html", { cache: "no-store" })
+                    .then(function (response) {
+                        if (!response.ok) throw new Error("Homepage unavailable");
+                        window.location.replace("index.html");
+                    })
+                    .catch(function () {
+                        setOnlineUI(false);
+                    });
+            }
+
+            function attemptReload() {
+                statusText.textContent = "Trying again…";
+                checkHomepage(true);
+            }
+
+            retryBtn.addEventListener("click", attemptReload);
+            window.addEventListener("online", function () { checkHomepage(false); });
+            window.addEventListener("offline", function () { setOnlineUI(false); });
+
+            // Verify the homepage itself instead of trusting navigator.onLine,
+            // which can be true while the site server is still unavailable.
+            checkHomepage(false);
+        })();
+    </script>
+</body>
+
+</html>
