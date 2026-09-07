@@ -8,7 +8,25 @@ var CORE_ASSETS = [
 self.addEventListener("install", function (event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function (cache) {
-      return cache.addAll(CORE_ASSETS);
+      // cache.addAll() is atomic: if ANY request here fails (404, a
+      // transient network error, an opaque response, etc.) the WHOLE
+      // install rejects and NOTHING is cached - including offline.html.
+      // That silently breaks the offline fallback with no visible error.
+      // Cache each asset independently instead, so one bad asset can
+      // never take offline.html down with it. { cache: "reload" } skips
+      // the HTTP cache so we always store a genuinely fresh copy.
+      return Promise.all(
+        CORE_ASSETS.map(function (url) {
+          return fetch(url, { cache: "reload" })
+            .then(function (response) {
+              if (!response.ok) throw new Error("Bad response (" + response.status + ") for " + url);
+              return cache.put(url, response);
+            })
+            .catch(function (error) {
+              console.warn("[sw] failed to precache", url, error);
+            });
+        })
+      );
     }).then(function () {
       return self.skipWaiting();
     })
