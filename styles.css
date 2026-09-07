@@ -277,6 +277,76 @@ p {
   outline-offset: 2px;
 }
 
+/* ============================================================
+   PRELOADER
+   Shown until paper.json has loaded and the first render is
+   done; script.js fades it out via the .is-hidden class, then
+   removes it from the DOM. See @media (prefers-reduced-motion)
+   above for the no-animation fallback.
+   ============================================================ */
+body.is-loading {
+  overflow: hidden;
+}
+
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(120% 140% at 15% 0%, var(--maroon-700), var(--maroon-950) 70%);
+  opacity: 1;
+  visibility: visible;
+  transition: opacity .5s ease, visibility .5s ease;
+}
+
+.preloader.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.preloader-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.preloader-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  object-fit: cover;
+  box-shadow: var(--shadow-pop);
+}
+
+.preloader-word {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--cream);
+}
+
+.preloader-bar {
+  width: 140px;
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(249, 241, 228, .2);
+  overflow: hidden;
+}
+
+.preloader-bar-fill {
+  display: block;
+  width: 40%;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--gold);
+}
+
 .wrap {
   max-width: 1240px;
   margin: 0 auto;
@@ -956,6 +1026,7 @@ html[data-theme="dark"] .theme-icon-moon {
 }
 
 @media (max-width:1024px) {
+
   .header-actions .btn,
   .header-actions .theme-toggle {
     display: none;
@@ -2310,6 +2381,7 @@ html[data-theme="dark"] .theme-icon-moon {
   justify-content: center;
   color: rgba(249, 241, 228, .8);
 }
+
 .footer-social a i {
   font-size: 14px;
   line-height: 1;

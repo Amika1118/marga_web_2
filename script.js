@@ -419,6 +419,7 @@ function updateNumber() {
      ============================================================ */
   var dom = {};
   function cacheDom() {
+    dom.preloader = document.getElementById("preloader");
     dom.themeToggles = document.querySelectorAll(".theme-toggle");
 
     dom.searchToggle = document.getElementById("searchToggle");
@@ -2202,12 +2203,102 @@ function updateNumber() {
   }
 
   /* ============================================================
+     PRELOADER
+     Hidden once paper data has loaded (or failed to), so it never
+     blocks the page longer than the initial data fetch needs.
+     The hard timeout is a safety net for a fetch that hangs
+     without ever resolving or rejecting.
+     ============================================================ */
+  var preloaderHidden = false;
+  var preloaderStartedAt = Date.now();
+  var PRELOADER_MIN_DURATION = 2500;
+  var preloaderMotion = null;
+
+  function startPreloaderAnimation() {
+    if (!dom.preloader || !window.gsap) return;
+    var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) return;
+
+    var logo = dom.preloader.querySelector(".preloader-logo");
+    var word = dom.preloader.querySelector(".preloader-word");
+    var bar = dom.preloader.querySelector(".preloader-bar");
+    var fill = dom.preloader.querySelector(".preloader-bar-fill");
+    var inner = dom.preloader.querySelector(".preloader-inner");
+
+    window.gsap.set([logo, word, bar], { opacity: 0 });
+    window.gsap.set(logo, { scale: 0.82, rotation: -6 });
+    window.gsap.set(word, { y: 12 });
+    window.gsap.set(bar, { y: 8 });
+    window.gsap.set(fill, { xPercent: -120 });
+
+    var intro = window.gsap.timeline();
+    intro
+      .to(logo, { opacity: 1, scale: 1, rotation: 0, duration: 0.75, ease: "back.out(1.7)" })
+      .to(word, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, "-=0.35")
+      .to(bar, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, "-=0.2");
+
+    var pulse = window.gsap.to(logo, {
+      scale: 1.06,
+      duration: 1.1,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut"
+    });
+    var progress = window.gsap.to(fill, {
+      xPercent: 220,
+      duration: 1.35,
+      repeat: -1,
+      ease: "power1.inOut"
+    });
+
+    preloaderMotion = { intro: intro, pulse: pulse, progress: progress, inner: inner };
+  }
+
+  function hidePreloader() {
+    if (preloaderHidden) return;
+    var remaining = PRELOADER_MIN_DURATION - (Date.now() - preloaderStartedAt);
+    if (remaining > 0) {
+      setTimeout(hidePreloader, remaining);
+      return;
+    }
+    preloaderHidden = true;
+    document.body.classList.remove("is-loading");
+    var preloaderEl = dom.preloader || document.getElementById("preloader");
+    if (!preloaderEl) return;
+
+    var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (preloaderMotion && window.gsap && !reduceMotion) {
+      preloaderMotion.intro.kill();
+      preloaderMotion.pulse.kill();
+      preloaderMotion.progress.kill();
+      window.gsap.timeline({
+        onComplete: function () {
+          preloaderEl.classList.add("is-hidden");
+          setTimeout(function () {
+            if (preloaderEl.parentNode) preloaderEl.parentNode.removeChild(preloaderEl);
+          }, 600);
+        }
+      })
+        .to(preloaderMotion.inner, { y: -16, opacity: 0, duration: 0.35, ease: "power2.in" })
+        .to(preloaderEl, { opacity: 0, duration: 0.55, ease: "power2.inOut" }, "-=0.1");
+      return;
+    }
+
+    preloaderEl.classList.add("is-hidden");
+    setTimeout(function () {
+      if (preloaderEl.parentNode) preloaderEl.parentNode.removeChild(preloaderEl);
+    }, 600);
+  }
+  setTimeout(hidePreloader, 8000);
+
+  /* ============================================================
      INIT
      ============================================================ */
   var wired = false;
   function init() {
     if (!wired) {
       cacheDom();
+      startPreloaderAnimation();
       wireTheme();
       wireHeader();
       wireToolbar();
@@ -2242,8 +2333,12 @@ function updateNumber() {
         if (!isTourSeen() && !dom.detailOverlay.classList.contains("is-open")) {
           startTour();
         }
+        hidePreloader();
       })
-      .catch(renderLoadError);
+      .catch(function (err) {
+        renderLoadError(err);
+        hidePreloader();
+      });
   }
 
   if (document.readyState === "loading") {
