@@ -1,55 +1,42 @@
-var CACHE_NAME = "marga-research-hub-v2";
+var CACHE_NAME = "marga-research-hub-v3";
 var OFFLINE_URL = "offline.html";
 var CORE_ASSETS = [
   OFFLINE_URL,
   "site_logo/marga-logo.jpg"
 ];
 
-// A response that arrived via an HTTP redirect carries response.redirected
-// === true. Navigation requests (mode: "navigate") always have
-// redirect: "manual" internally, and Chrome refuses to let a
-// "redirected" response satisfy them - "a redirected response was used
-// for a request whose redirect mode is not 'follow'". If offline.html
-// (or any core asset) is served behind a redirect on the Worker, that
-// flag rides along into the cache and silently breaks the fallback.
-// Rebuilding a plain Response with the same body/status/headers resets
-// redirected back to false.
-function stripRedirected(response) {
-  if (!response.redirected) return Promise.resolve(response);
-  return response.blob().then(function (body) {
-    return new Response(body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: response.headers
-    });
-  });
+// How often to check the network for a newer offline.html / logo while the
+// visitor is browsing online. Keeps the fallback fresh without re-fetching
+// on literally every click.
+var REFRESH_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
+var REFRESH_META_KEY = "https://sw-meta.local/last-offline-refresh";
+
+// Fetches each core asset straight from the network, bypassing the
+// browser's HTTP cache. Plain cache.addAll()/fetch() can silently reuse an
+// already-cached HTTP response, so a page/logo update on the server
+// wouldn't necessarily make it into the Cache Storage entry. {cache:
+// "reload"} forces an actual round-trip.
+function cacheCoreAssetsFresh(cache) {
+  return Promise.all(
+    CORE_ASSETS.map(function (url) {
+      return fetch(url, { cache: "reload" })
+        .then(function (response) {
+          if (response && response.ok) {
+            return cache.put(url, response.clone());
+          }
+        })
+        .catch(function () {
+          // Offline or asset briefly unreachable - leave whatever is
+          // already cached in place rather than failing the whole batch.
+        });
+    })
+  );
 }
 
 self.addEventListener("install", function (event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function (cache) {
-      // cache.addAll() is atomic: if ANY request here fails (404, a
-      // transient network error, an opaque response, etc.) the WHOLE
-      // install rejects and NOTHING is cached - including offline.html.
-      // That silently breaks the offline fallback with no visible error.
-      // Cache each asset independently instead, so one bad asset can
-      // never take offline.html down with it. { cache: "reload" } skips
-      // the HTTP cache so we always store a genuinely fresh copy.
-      return Promise.all(
-        CORE_ASSETS.map(function (url) {
-          return fetch(url, { cache: "reload" })
-            .then(function (response) {
-              if (!response.ok) throw new Error("Bad response (" + response.status + ") for " + url);
-              return stripRedirected(response);
-            })
-            .then(function (finalResponse) {
-              return cache.put(url, finalResponse);
-            })
-            .catch(function (error) {
-              console.warn("[sw] failed to precache", url, error);
-            });
-        })
-      );
+      return cacheCoreAssetsFresh(cache);
     }).then(function () {
       return self.skipWaiting();
     })
@@ -69,6 +56,24 @@ self.addEventListener("activate", function (event) {
   );
 });
 
+// Re-fetches CORE_ASSETS from the network and overwrites the cached copies,
+// but only if it's been more than REFRESH_INTERVAL_MS since the last time -
+// called opportunistically whenever we know we're online (see the
+// navigate handler below).
+function maybeRefreshOfflineCache(cache) {
+  return cache.match(REFRESH_META_KEY)
+    .then(function (metaResponse) {
+      return metaResponse ? metaResponse.text() : null;
+    })
+    .then(function (lastText) {
+      var last = lastText ? parseInt(lastText, 10) : 0;
+      if (Date.now() - last < REFRESH_INTERVAL_MS) return;
+      return cacheCoreAssetsFresh(cache).then(function () {
+        return cache.put(REFRESH_META_KEY, new Response(String(Date.now())));
+      });
+    });
+}
+
 self.addEventListener("fetch", function (event) {
   var requestUrl = new URL(event.request.url);
   var isCachedOfflineAsset = requestUrl.pathname.endsWith("/offline.html") ||
@@ -77,22 +82,21 @@ self.addEventListener("fetch", function (event) {
   if (isCachedOfflineAsset) {
     event.respondWith(
       caches.match(event.request).then(function (cachedResponse) {
-        if (cachedResponse) return cachedResponse;
-        // Cache miss (e.g. the very first offline attempt before install
-        // finished). event.request.redirect is "manual" for navigations,
-        // so rebuild the request with redirect: "follow" before fetching
-        // live - otherwise a redirected offline.html comes back as an
-        // opaque redirect, which the browser also refuses to render.
-        var liveRequest = event.request.mode === "navigate"
-          ? new Request(event.request, { redirect: "follow" })
-          : event.request;
-        return fetch(liveRequest).then(stripRedirected);
+        return cachedResponse || fetch(event.request);
       })
     );
     return;
   }
 
   if (event.request.mode !== "navigate") return;
+
+  // A navigation request only reaches here if the browser thinks it's
+  // worth trying the network, which is a good, cheap signal that we're
+  // online right now. Piggyback a throttled refresh of the offline
+  // fallback so it doesn't go stale between deploys.
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(maybeRefreshOfflineCache)
+  );
 
   event.respondWith(
     fetch(event.request).catch(function () {
