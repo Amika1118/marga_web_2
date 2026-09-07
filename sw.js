@@ -1,4 +1,4 @@
-var CACHE_NAME = "marga-research-hub-v3";
+var CACHE_NAME = "marga-research-hub-v4";
 var OFFLINE_URL = "offline.html";
 var CORE_ASSETS = [
   OFFLINE_URL,
@@ -11,6 +11,26 @@ var CORE_ASSETS = [
 var REFRESH_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
 var REFRESH_META_KEY = "https://sw-meta.local/last-offline-refresh";
 
+// A response that arrived after following an HTTP redirect carries an
+// internal "redirected" flag, and Cache Storage preserves it. Navigation
+// requests always have their redirect mode forced to "manual" by the
+// browser, and Chrome refuses to satisfy a "manual" request with a cached
+// response that's flagged as redirected - that's what throws "a redirected
+// response was used for a request whose redirect mode is not follow".
+// Rebuilding a plain Response from the body/status/headers strips that
+// flag, so anything we cache is always safe to serve to a navigation,
+// redirected origin or not.
+function toCacheableResponse(response) {
+  if (!response.redirected) return Promise.resolve(response);
+  return response.blob().then(function (body) {
+    return new Response(body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers
+    });
+  });
+}
+
 // Fetches each core asset straight from the network, bypassing the
 // browser's HTTP cache. Plain cache.addAll()/fetch() can silently reuse an
 // already-cached HTTP response, so a page/logo update on the server
@@ -22,7 +42,9 @@ function cacheCoreAssetsFresh(cache) {
       return fetch(url, { cache: "reload" })
         .then(function (response) {
           if (response && response.ok) {
-            return cache.put(url, response.clone());
+            return toCacheableResponse(response).then(function (cacheable) {
+              return cache.put(url, cacheable);
+            });
           }
         })
         .catch(function () {
