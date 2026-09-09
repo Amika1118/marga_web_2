@@ -986,23 +986,6 @@
     "litType": "report"
   },
   {
-    "id": "SLR-011",
-    "title": "Demographics and Professional Characteristics of Justice Sector Actors: Court Users, Lawyers, and Police Officers",
-    "authors": "Marga Institute",
-    "authorsLower": "marga institute",
-    "year": "2023",
-    "partner": "ministry",
-    "partnerName": "Justice Reform Programme (JURE)",
-    "isMarga": false,
-    "area": "justice",
-    "areaName": "Justice Sector & Demographics",
-    "areaIcon": "fa-balance-scale",
-    "abstract": "This quantitative research compilation profiles the demographic characteristics and operational interactions of key actors in the Sri Lankan justice sector, including court users, lawyers, and police officers. Tracking interactions across a 100-user court sample, the data indicates an average of 12 visits per court business, noting that language barriers and complex forms present key obstacles. It details a 100-lawyer sample (58% male, 42% female, averaging 11 years in profession) and a 100-police officer sample (98% male, 2% female), mapping their professional backgrounds, specialization areas, and service experience to provide an empirical basis for systemic justice sector reforms.",
-    "pdfUrl": "#",
-    "citations": 0,
-    "litType": "report"
-  },
-  {
     "id": "SLR-012",
     "title": "Mapping of Data Collection, Analysis and Dissemination Capacity of Key Justice Sector Institutions in Sri Lanka",
     "authors": "Marga Institute",
